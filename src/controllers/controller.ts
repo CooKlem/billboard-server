@@ -19,9 +19,7 @@ export async function getCounter(req: Request, res: Response) {
 export async function updateCounter(req: Request, res: Response) {
 	try {
 		const body = req.body;
-		const logStream = fs.createWriteStream("log.txt", { flags: "a" });
-		logStream.write(JSON.stringify(body));
-		logStream.end();
+		logReqBody(body);
 
 		if ("count" in body) {
 			const count = parseFloat(body.count);
@@ -37,4 +35,23 @@ export async function updateCounter(req: Request, res: Response) {
 	} catch (error) {
 		res.status(500).json(error);
 	}
+}
+
+function logReqBody(body: any) {
+	const logStream = fs.createWriteStream("log.txt", { flags: "a" });
+	var currentdate = new Date();
+	var datetime =
+		currentdate.getDate() +
+		"/" +
+		(currentdate.getMonth() + 1) +
+		"/" +
+		currentdate.getFullYear() +
+		" " +
+		currentdate.getHours() +
+		":" +
+		currentdate.getMinutes() +
+		":" +
+		currentdate.getSeconds();
+	logStream.write(datetime + ": " + JSON.stringify(body) + "\n");
+	logStream.end();
 }

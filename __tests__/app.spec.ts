@@ -23,14 +23,14 @@ describe("app.ts", () => {
 
 		expect(res.statusCode).toBe(200);
 		expect(fs.existsSync(FILENAME)).toBeTruthy();
-		expect(fs.readFileSync(FILENAME, "utf-8")).toMatch(
+		expect(fs.readFileSync(FILENAME, "utf-8")).toContain(
 			JSON.stringify(testValue)
 		);
 	});
 
 	test("POST /track should append to file if there are data", async () => {
 		const testFileFluff = JSON.stringify({ object: "value" });
-		fs.writeFileSync(FILENAME, testFileFluff);
+		fs.writeFileSync(FILENAME, testFileFluff + "\n");
 		expect(fs.existsSync(FILENAME)).toBeTruthy();
 
 		const testValue = { count: 5 };
@@ -39,7 +39,7 @@ describe("app.ts", () => {
 		expect(res.statusCode).toBe(200);
 		expect(fs.existsSync(FILENAME)).toBeTruthy();
 		expect(fs.readFileSync(FILENAME, "utf-8")).toMatch(
-			testFileFluff + JSON.stringify(testValue)
+			JSON.stringify(testValue)
 		);
 	});
 
