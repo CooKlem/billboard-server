@@ -1,9 +1,9 @@
 import app from "./app";
-import client from "./service/redisClient";
+import dbClient from "./service/redisClientFactory";
 
 const PORT = process.env.PORT || 3000;
 
-client
+dbClient
 	.connect()
 	.then(() => {
 		app.listen(PORT, () =>

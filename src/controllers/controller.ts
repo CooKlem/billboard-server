@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import fs from "fs";
-import client from "../service/redisClient";
+import dbClient from "../service/redisClientFactory";
 
 interface CounterResponse {
 	count: number;
@@ -9,7 +9,7 @@ interface CounterResponse {
 export async function getCounter(req: Request, res: Response) {
 	try {
 		const cntRes: CounterResponse = { count: 0 };
-		cntRes.count = Number(await client.get("count"));
+		cntRes.count = Number(await dbClient.get("count"));
 		res.status(200).json(cntRes);
 	} catch (error) {
 		res.status(500).json(error);
@@ -31,7 +31,7 @@ export async function updateCounter(req: Request, res: Response) {
 				});
 				return;
 			}
-			await client.incrByFloat("count", count);
+			await dbClient.incrByFloat("count", count);
 		}
 		res.sendStatus(200);
 	} catch (error) {

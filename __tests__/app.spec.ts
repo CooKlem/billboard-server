@@ -1,13 +1,13 @@
 import request from "supertest";
 import app from "../src/app";
-import client from "../src/service/redisClient";
+import dbClient from "../src/service/redisClientFactory";
 import fs from "fs";
 
 const FILENAME = "log.txt";
 
 describe("app.ts", () => {
 	beforeEach(() => {
-		client.set("count", 0);
+		dbClient.set("count", 0);
 		if (fs.existsSync(FILENAME)) fs.unlinkSync("log.txt");
 	});
 
@@ -48,37 +48,37 @@ describe("app.ts", () => {
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(200);
-		expect(client.get("count")).toBe(testValue.count);
+		expect(dbClient.get("count")).toBe(testValue.count);
 	});
 
 	test("POST /track should increase count in database with count parameter", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = { count: 5 };
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(200);
-		expect(client.get("count")).toBe(testValue.count + dbValue);
+		expect(dbClient.get("count")).toBe(testValue.count + dbValue);
 	});
 
 	test("POST /track should increase count in database with negative count parameter", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = { count: -5 };
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(200);
-		expect(client.get("count")).toBe(testValue.count + dbValue);
+		expect(dbClient.get("count")).toBe(testValue.count + dbValue);
 	});
 
 	test("POST /track should increase count in database with count parameter from multiple paramaters", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = {
 			object: { value: 3 },
@@ -89,13 +89,13 @@ describe("app.ts", () => {
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(200);
-		expect(client.get("count")).toBe(testValue.count + dbValue);
+		expect(dbClient.get("count")).toBe(testValue.count + dbValue);
 	});
 
 	test("POST /track shouldn't increase count in database when count parameter isn't sent", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = {
 			object: { value: 3 },
@@ -105,29 +105,29 @@ describe("app.ts", () => {
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(200);
-		expect(client.get("count")).toBe(dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 	});
 
 	test("POST /track should handle errors during db setting", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = { count: 5 };
-		client.incrByFloat = jest.fn().mockImplementation(() => {
+		dbClient.incrByFloat = jest.fn().mockImplementation(() => {
 			throw new Error();
 		});
 		const res = await request(app).post("/track").send(testValue);
 
 		expect(res.statusCode).toBe(500);
-		expect(client.get("count")).toBe(dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 		jest.clearAllMocks();
 	});
 
 	test("POST /track shouldn't increase count in database when count parameter isn't number", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const testValue = {
 			object: { value: 3 },
@@ -141,13 +141,13 @@ describe("app.ts", () => {
 		expect(res.body.message).toMatch(
 			"Parameter count should contains only numbers!"
 		);
-		expect(client.get("count")).toBe(dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 	});
 
 	test("GET /count should get count from database", async () => {
 		const dbValue = 20;
-		client.set("count", dbValue);
-		expect(client.get("count")).toBe(dbValue);
+		dbClient.set("count", dbValue);
+		expect(dbClient.get("count")).toBe(dbValue);
 
 		const res = await request(app).get("/count").send();
 
@@ -156,7 +156,7 @@ describe("app.ts", () => {
 	});
 
 	test("GET /count should handle error during db read", async () => {
-		client.get = jest.fn().mockImplementation(() => {
+		dbClient.get = jest.fn().mockImplementation(() => {
 			throw new Error();
 		});
 		const res = await request(app).get("/count").send();
