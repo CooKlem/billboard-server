@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import fs from "fs";
 import dbClient from "../service/redisClientFactory";
+import { logReqBody } from "../utils/utils";
 
 interface CounterResponse {
 	count: number;
@@ -35,23 +35,4 @@ export async function updateCounter(req: Request, res: Response) {
 	} catch (error) {
 		res.status(500).json(error);
 	}
-}
-
-function logReqBody(body: any) {
-	const logStream = fs.createWriteStream("log.txt", { flags: "a" });
-	var currentdate = new Date();
-	var datetime =
-		currentdate.getDate() +
-		"/" +
-		(currentdate.getMonth() + 1) +
-		"/" +
-		currentdate.getFullYear() +
-		" " +
-		currentdate.getHours() +
-		":" +
-		currentdate.getMinutes() +
-		":" +
-		currentdate.getSeconds();
-	logStream.write(datetime + ": " + JSON.stringify(body) + "\n");
-	logStream.end();
 }
